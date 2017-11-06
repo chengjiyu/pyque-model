@@ -5,7 +5,7 @@ from models import source, msg_queue, server
 from models import source_model, channel
 from models import gol
 RANDOM_SEED = 42
-SIM_TIME = 20       # Simulation time
+SIM_TIME = 5000       # Simulation time
 
 def session1():
     env = simpy.Environment()
@@ -37,7 +37,7 @@ def session1():
     mq.server.set_channel(ch)
 
     random.seed(RANDOM_SEED)        # This helps reproducing the results
-    env.run(until = 5000)
+    env.run(until = SIM_TIME)
 
 def main():
     session1()

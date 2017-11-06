@@ -172,7 +172,7 @@ avg_th = (1-pr[-1]-pb[-1]-pt[-1])*(id[-1])/5000
 print('平均吞吐量 ： %f' %avg_th)
 
 path = 'E:\chengjiyu\研究生毕设\结果图\仿真结果tcpmodel\\'
-with open (path+'result_'+'str(0.2)'+'.txt', 'w') as r:
+with open (path+'result_'+'0.0'+'.txt', 'w') as r:
     r.write('无线丢包率 ： %f %%' %(pr[-1]*100)+"\n")
     r.write('拥塞丢包率 ： %f %%' %(pb[-1]*100)+"\n")
     r.write('超时丢包率 ： %f %%' %(pt[-1]*100)+"\n")
@@ -184,7 +184,7 @@ T = []
 for i in range(10,len([i for i in size if i == 0] )):
     Tp = id[i]/create[i]
     T.append(Tp)
-print('Throughput: {}'.format(T))
+print('Throughput: {}'.format(T[-1]))
 pac_loss = [sum(i) for i in list(zip(pr,pb,pt))]
 sim_G = []
 for i in pac_loss:
@@ -430,7 +430,7 @@ plt.xlabel('time')# make axis labels
 plt.ylabel('goodput')
 plt.legend(loc='best')
 plt.savefig(path + 'goodput'+'.png')
-
+print(loss_timeout[2499],pac_loss[-1])
 # --------------------------------------------------the packet loss due to timeout------------------------------
 fig = plt.figure(10)
 q_xlabel  = [i*2 for i in range(len(q))]
@@ -471,3 +471,8 @@ plt.savefig(path + 'RTT'+'.png')
 # show the figure
 plt.show()
 plt.close('all')
+
+import os
+filename = 'E:/chengjiyu/pyque-improved/tests/data.txt'
+if os.path.exists(filename):
+  os.remove(filename)

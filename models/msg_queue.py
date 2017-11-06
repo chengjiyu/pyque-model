@@ -4,6 +4,7 @@ from collections import deque
 from .unit import Message, Pdu
 from .server import BaseServer
 from .log import Logger
+from .gol import gol
 
 class MsgQueue(object):
     '''
@@ -16,6 +17,8 @@ class MsgQueue(object):
         assert isinstance(env, simpy.Environment)
         self.__env = env
         self.__log = Logger('buffer', 'data.txt')
+        self.__gol = gol()
+        self.__len = "lenght"
 
         if server:
             self.__server = server
@@ -57,6 +60,7 @@ class MsgQueue(object):
                     serve_pdu.append(first.get(first.size))
                     print('Buffer size:{0}'.format(self.queue.__len__()))       # add output buffer size by chengjiyu on 2016/10/13
                     self.__log.logger.info('Buffer size:{0}'.format(self.queue.__len__()))
+                    self.__gol.set_value(self.__len, self.queue.__len__())  # 对等待队列长度赋值
             else:
                 break
         if serve_pdu.filled is 0:
