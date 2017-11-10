@@ -48,6 +48,7 @@ class MMPPModel(BaseSourceModel):
         self.__accumulator = 0
         self.__segment = 1400       # add segment size by chengjiyu on 2016/10/9
         self.__d = "d"             # 初始化当丢包时的窗口减小因子 chengjiyu on 2017/06/05
+        self.__v = "v"            # 初始化窗口的增长速率 chengjiyu on 2017/11/10
 
     def get_interval(self):
         state = self.__states[self.__cur_state]
@@ -69,7 +70,15 @@ class MMPPModel(BaseSourceModel):
     def on_served(self):
         print('The source received feedback for successful delivering')
         self.__log.logger.info('The source received feedback for successful delivering')
-        self.__gol.set_value(self.__d, 0)  # 对丢包时的窗口减小因子赋值 chengjiyu on 2017/06/05
+        self.__gol.set_value(self.__d, 0)  # 对丢包时的窗口减小因子d赋值 chengjiyu on 2017/06/05
+        # 队列长度检测算法QLD chengjiyu on 2017/11/10
+        if self.__gol.get_value("lenght") < 3:
+            v = 0.182
+        elif self.__gol.get_value("lenght") > 6:
+            v = 0.150
+        else:
+            v = 0.182-(0.182-0.150)*(self.__gol.get_value("lenght")-3)/3
+        self.__gol.set_value(self.__v, v)  # 窗口的增长速率v赋值 chengjiyu on 2017/11/10
         if self.__cwnd <= self.__ssth:
             self.__cwnd += self.__segment
             print("Acked in Slow Start Phase")
@@ -90,18 +99,28 @@ class MMPPModel(BaseSourceModel):
     def on_droped(self):
         print('The source received feedback for transmission failure')
         self.__log.logger.info('The source received feedback for transmission failure')
+        # 等待时间检测算法WTD chengjiyu on 2017.11.10
+        if self.__gol.get_value("lenght") < 3:
+            d = 0
+        elif self.__gol.get_value("lenght") > 6:
+            d = 0.5
+        else:
+            d = 0.5-0.5*(self.__gol.get_value("lenght")-3)/3
         self.__ssth = max(2 * self.__segment, self.__cwnd // 2)
-        self.__cwnd = self.__ssth# + 3 * self.__segment
+        if self.__gol.get_value("if improved"):
+            self.__cwnd = max(2 * self.__segment,(1-d)*self.__cwnd) # WTD算法
+        else:
+            self.__cwnd = self.__ssth# + 3 * self.__segment
         # self.__cwnd = max(self.__cwnd // 2, 1)
         # self.__ssth = max(self.__cwnd, 2)
         print("duplicate acks \ncwnd is {0}, ssth is {1}".format(self.__cwnd, self.__ssth))
         self.__log.logger.info("cwnd is {0}, ssth is {1}".format(self.__cwnd, self.__ssth))
-        self.__gol.set_value(self.__d, 0.5)         # 对丢包时的窗口减小因子赋值 chengjiyu on 2017/06/05
+        self.__gol.set_value(self.__d, d)         # 对丢包时的窗口减小因子赋值 chengjiyu on 2017/06/05
 
     def on_timeout(self):
         print('The source received feedback for time out')
         self.__log.logger.info('The source received feedback for time out')
-        self.__gol.set_value(self.__d, 0.5)  # 对丢包时的窗口减小因子赋值 chengjiyu on 2017/06/05
+        self.__gol.set_value(self.__d, 1)  # 对丢包时的窗口减小因子赋值 chengjiyu on 2017/06/05
         # self.__ssth = max(self.__cwnd // 2, 2)
         # self.__cwnd = 0
         self.__ssth = max(2 * self.__segment, self.__cwnd // 2)
