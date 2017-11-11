@@ -107,7 +107,7 @@ class MMPPModel(BaseSourceModel):
         else:
             d = 0.5-0.5*(self.__gol.get_value("lenght")-3)/3
         self.__ssth = max(2 * self.__segment, self.__cwnd // 2)
-        if self.__gol.get_value("if improved"):
+        if self.__gol.get_value("ifImprovrd"):
             self.__cwnd = max(2 * self.__segment,(1-d)*self.__cwnd) # WTD算法
         else:
             self.__cwnd = self.__ssth# + 3 * self.__segment

@@ -87,9 +87,6 @@ class Packet(object):
         if self.dropped:
             msg += '\t dropped = %s' % str(self.dropped_time)        # add %f by chengjiyu on 2016/9/19
         if self.served and self.serve_on:
-            print(self.served_time)
-            print(self.serve_on_time)
-            print(self.arrive_time)
             msg += '\t served = {0:f} \t served_finish = {1:f} \t service_time = {2:f}' \
                 .format(self.served_time - self.serve_on_time, self.served_time, self.served_time - self.arrive_time)
                 # self.serve_on_time --> self.arrive_time changed by chengjiyu on 2016/10/24    # add 'self.served_time - self.serve_on_time' by chengjiyu on 2016/12/5
