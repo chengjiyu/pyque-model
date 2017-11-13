@@ -50,11 +50,36 @@ class MMPPModel(BaseSourceModel):
         self.__d = "d"             # 初始化当丢包时的窗口减小因子 chengjiyu on 2017/06/05
         self.__v = "v"            # 初始化窗口的增长速率 chengjiyu on 2017/11/10
 
+    def get_lambda(self):
+        # 参数定义
+        s_1 = 8.4733 * 10 ** (-4)
+        s_2 = 5.0201 * 10 ** (-6)
+        pi = np.mat(np.array([0.0058897, 0.9941103]))
+        e = np.mat(np.ones((2, 1)))
+        In = np.mat(np.eye(2))
+        L = np.mat(np.array([[1.0722, 0], [0, 0.48976]]))
+        Q_th = np.mat(np.array([[-s_1, s_1], [s_2, -s_2]]))
+        fai = pi * L / (pi * L * e)
+        l = np.mat(np.array([1.0722, 0.48976]))
+        v = self.__gol.get_value(self.__v, 0.182)
+        d = self.__gol.get_value(self.__d)  # d 的取值范围是 0 - 1, d 由全局变量 _global_dict 获得
+        b = v * fai * (
+            (Q_th - L).I ** 2 * L * (1 - d) * (In - (1 - d) * (Q_th - L).I * L).I * (Q_th - L).I ** 2 * L - (
+            Q_th - L).I ** 3 * L) * e
+        self.__gol.set_value("ifImproved", 1)
+        if self.__gol.get_value("ifImproved"):
+            Lambda = np.array((b * l).tolist()[0])   # [1.0722,0.48976]
+            print("Lambda:", Lambda)
+        else:
+            Lambda = np.array([1.0722, 0.48976])
+        return Lambda
     def get_interval(self):
         state = self.__states[self.__cur_state]
         rate = self.__Lambda[state]
         dice = np.random.random()
         self.__cur_state = np.argwhere(self.__state_transition[self.__cur_state] > dice)[0][0]
+        self.__Lambda = self.get_lambda()
+        # self.__gol.set_value("lambda", self.get_lambda())
         # Find the indices of array elements that are non-zero, grouped by element.
         # return position of the first meet specified condition
         return np.random.exponential(1./ rate) / rate
@@ -75,9 +100,9 @@ class MMPPModel(BaseSourceModel):
         if self.__gol.get_value("lenght") < 3:
             v = 0.182
         elif self.__gol.get_value("lenght") > 6:
-            v = 0.150
+            v = 0.142
         else:
-            v = 0.182-(0.182-0.150)*(self.__gol.get_value("lenght")-3)/3
+            v = 0.182-(0.182-0.142)*(self.__gol.get_value("lenght")-3)/3
         self.__gol.set_value(self.__v, v)  # 窗口的增长速率v赋值 chengjiyu on 2017/11/10
         if self.__cwnd <= self.__ssth:
             self.__cwnd += self.__segment
@@ -105,9 +130,9 @@ class MMPPModel(BaseSourceModel):
         elif self.__gol.get_value("lenght") > 6:
             d = 0.5
         else:
-            d = 0.5-0.5*(self.__gol.get_value("lenght")-3)/3
+            d = 0.5*(self.__gol.get_value("lenght")-3)/3
         self.__ssth = max(2 * self.__segment, self.__cwnd // 2)
-        if self.__gol.get_value("ifImprovrd"):
+        if self.__gol.get_value("ifImproved"):
             self.__cwnd = max(2 * self.__segment,(1-d)*self.__cwnd) # WTD算法
         else:
             self.__cwnd = self.__ssth# + 3 * self.__segment

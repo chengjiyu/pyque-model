@@ -25,7 +25,7 @@ class ErrorChannel(Channel):
         else:
             error = False
         duration = stats.expon.rvs(scale=0.458471218552, size=1)[0]
-        # duration = random.exponential(0.458471218552)        # random.geometric(0.1) --> random.exponential(1.) serve duration is long by chengjiyu on 2016/9/22
+        # duration = random.exponential(0.458471218552)   0.70471218552     # random.geometric(0.1) --> random.exponential(1.) serve duration is long by chengjiyu on 2016/9/22
         return duration, error
 
 class FixedChannel(Channel):

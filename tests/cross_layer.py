@@ -166,6 +166,7 @@ P = ACK.count(0)/(len(ACK))
 print('无线丢包率 ： %f %%' %(pr[-1]*100))
 print('拥塞丢包率 ： %f %%' %(pb[-1]*100))
 print('超时丢包率 ： %f %%' %(pt[-1]*100))
+print('总丢包率 ： %f %%' %(pr[-1]*100+pb[-1]*100+pt[-1]*100))
 # ------------------------------------------------计算仿真吞吐量----------------------------------------------------
 # 吞吐量
 avg_th = (1-pr[-1]-pb[-1]-pt[-1])*(id[-1])/5000
@@ -210,7 +211,10 @@ for item in arrset:
     a = interval_1.count(item)
     interval_2.append(a/len(interval_1))
 
-print('arrival interval: {0}'.format(interval_2))
+print('arrival interval: {0}'.format(interval))
+with open (path+'interval_qt'+'.txt', 'w') as r:
+    for i in interval:
+        r.write('%f' %(i) + " ")
 
 # the service_time time 从到达到服务结束的时间
 service_time_0 = sorted(service_time)
@@ -280,7 +284,7 @@ wait = []
 for k in range(len(c)):
     s = 0
     for l in range(len(c[k])):
-        s += service_time[c[k][l]]     # [c[k][l]] 是队长列表相同队长对应等待时间的索引值
+        s += wait_time[c[k][l]]     # [c[k][l]] 是队长列表相同队长对应等待时间的索引值
     if len(c[k]) != 0:
         wait.append(s/len(c[k]))
 
@@ -378,7 +382,7 @@ plt.savefig(path + 'The vartual waiting time'+'.png')
 # ----------------------------------------The served time distribution---------------------
 fig= plt.figure(7)
 u = 2.181162
-x = np.arange(0, 8, 1)
+x = np.arange(0, 10, 1)
 y = (1/u)*np.exp(-x/u)
 plt.plot(x,y,label = "the TCP NewReno result",color="red")
 # plt.plot(arrset,served_2,label = "the TCP QL-WT result")
@@ -448,6 +452,7 @@ fig= plt.figure(11)
 queue_pro = []
 for i in range(10):
     queue_pro.append(length.count(i)/len(length))
+print("队列长度次数：",queue_pro)
 # sorted = np.sort(length)
 # y = np.arange(len(sorted))/float(len(sorted)-1)
 # plt.plot(sorted,y)
