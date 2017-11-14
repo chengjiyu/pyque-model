@@ -35,7 +35,7 @@ def session1():
     ch = channel.ErrorChannel()
     mq.server.set_channel(ch)
 
-    random.seed(RANDOM_SEED)        # This helps reproducing the results
+    # random.seed(RANDOM_SEED)        # This helps reproducing the results
     env.run(until = SIM_TIME)
 
 def main():

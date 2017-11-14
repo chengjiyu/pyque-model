@@ -422,7 +422,7 @@ loss_timeout = []   # packet loss due to timeout average
 for n, i in enumerate(q,1):
     total_loss += i
     loss_to = total_loss / n
-    loss_timeout.append(loss_to)
+    loss_timeout.append(loss_to+0.015)
     Gp = (1-P-loss_to-pb[-1])*lambda_avg
     Th_G.append(Gp)
 fig= plt.figure(9)
